@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ResultActivity">
+
+
+  <androidx.appcompat.widget.Toolbar
+      android:id="@+id/toolbar"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      app:navigationIcon="@drawable/ic_back"
+      tools:ignore="MissingConstraints"
+      tools:layout_editor_absoluteX="0dp"
+      tools:layout_editor_absoluteY="0dp">
+
+    <TextView
+        android:id="@+id/Topo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Resultado"
+        android:textColor="@color/white"
+        android:textSize="@android:dimen/app_icon_size"
+        tools:layout_editor_absoluteX="99dp"
+        tools:layout_editor_absoluteY="34dp" />
+
+  </androidx.appcompat.widget.Toolbar>
+
+  <TextView
+      android:id="@+id/resultTextOrigem"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="32dp"
+      android:text="Ponto de partida selecionado:"
+      android:textColor="@color/white"
+      android:visibility="invisible"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+
+  <TextView
+      android:id="@+id/resultTextDestino"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="32dp"
+      android:layout_marginTop="1dp"
+      android:text="Destino selecionado:"
+      android:textColor="@color/white"
+      android:visibility="invisible"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/resultEditOrigem" />
+
+  <EditText
+      android:id="@+id/resultEditOrigem"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginEnd="32dp"
+      android:background="@drawable/bg_edittext_disable"
+      android:ems="10"
+      android:enabled="false"
+      android:hint="Londrina"
+      android:padding="14dp"
+      android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+      android:visibility="invisible"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintHorizontal_bias="0.0"
+      app:layout_constraintStart_toStartOf="@+id/resultTextOrigem"
+      app:layout_constraintTop_toBottomOf="@+id/resultTextOrigem" />
+
+
+  <EditText
+      android:id="@+id/resultEditDestino"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="8dp"
+      android:layout_marginEnd="32dp"
+      android:background="@drawable/bg_edittext_disable"
+      android:ems="10"
+      android:enabled="false"
+      android:hint="Curitiba"
+      android:padding="14dp"
+      android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+      android:visibility="invisible"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintHorizontal_bias="0.0"
+      app:layout_constraintStart_toStartOf="@+id/resultTextDestino"
+      app:layout_constraintTop_toBottomOf="@+id/resultTextDestino" />
+
+
+  <WebView
+      android:id="@+id/webv"
+      android:layout_width="392dp"
+      android:layout_height="598dp"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="@+id/toolbar"
+      app:layout_constraintTop_toBottomOf="@+id/toolbar">
+
+  </WebView>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
