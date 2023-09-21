@@ -1,6 +1,8 @@
 package com.example.viajantes;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,7 +18,21 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.Charset;
+
+
 import com.example.viajantes.databinding.ActivityResultBinding;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class ResultActivity extends AppCompatActivity {
 
@@ -44,7 +60,12 @@ public class ResultActivity extends AppCompatActivity {
             textViewDESTINO.setText(valueDestino);
         }
 
-        buscarInformacoesGPS();
+        try {
+            buscarInformacoesGPS();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     public void iniciaToolbar() {
@@ -53,7 +74,7 @@ public class ResultActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
     }
 
-    public void buscarInformacoesGPS() {
+    public void buscarInformacoesGPS() throws IOException {
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -76,30 +97,117 @@ public class ResultActivity extends AppCompatActivity {
         } else {
             //Toast.makeText(ResultActivity.this, "GPS DESABILITADO.", Toast.LENGTH_LONG).show();
         }
-
         this.mostrarGoogleMaps(MinhaLocalizacaoListener.latitude, MinhaLocalizacaoListener.longitude);
     }
 
-    public void mostrarGoogleMaps(double latitude, double longitude) {
+    @SuppressLint("SetJavaScriptEnabled")
+    public void mostrarGoogleMaps(double latitude, double longitude) throws IOException {
         EditText infoOrigem = findViewById(R.id.resultEditOrigem);
         EditText infoDestino = findViewById(R.id.resultEditDestino);
         String valorOrigem = infoOrigem.getText().toString();
         String valorDestino = infoDestino.getText().toString();
 
-
         WebView wv = findViewById(R.id.webv);
         wv.getSettings().setJavaScriptEnabled(true);
-        //wv.loadUrl("https://www.google.com/maps/search/?api=1&query=" + latitude + "," + longitude);
 
-        //String endereco = "https://maps.googleapis.com/maps/api/directions/json?destination=" + valorDestino + "&origin=" + valorOrigem + "&key=AIzaSyAMrKZYSi5NEDBXVp18EGktsegWRiMWW8M";
+        // Construa a URL da direção do Google Maps
+        String mapsUrl = "https://www.google.com.br/maps/dir/" + valorOrigem + "/" + valorDestino;
 
-        String endereco = "https://maps.googleapis.com/maps/api/directions/json?destination=Londrina&origin=Apucarana&key=AIzaSyAMrKZYSi5NEDBXVp18EGktsegWRiMWW8M";
+        // Carregue a URL no WebView
+        wv.loadUrl(mapsUrl);
 
-        wv.loadUrl("https://www.google.com.br/maps/dir/" + valorOrigem + "/" + valorDestino);
-        //System.out.println(resultado);
-        System.out.println("Passei por aqui");
 
+        try {
+            String urlString = "https://maps.googleapis.com/maps/api/directions/json?destination="+ valorDestino+"&origin="+ valorOrigem + "&key=AIzaSyAMrKZYSi5NEDBXVp18EGktsegWRiMWW8M";
+            URL url = new URL(urlString);
+
+            // Crie uma instância da AsyncTask e execute-a com a URL
+            new HttpRequestTask().execute(url);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
     }
+
+    public String makeHttpRequest (URL url) throws IOException{
+        String jsonResponse = "";
+        HttpURLConnection urlConnection = null;
+        InputStream inputStream = null;
+
+        try {
+            urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod("GET");
+            urlConnection.setReadTimeout(1000);
+            urlConnection.setConnectTimeout(1500);
+            urlConnection.connect();
+
+            // Verifique se a resposta HTTP é bem-sucedida (código de resposta 200)
+            if (urlConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                inputStream = urlConnection.getInputStream();
+                jsonResponse = readFromStream(inputStream);
+            } else {
+                // Lidar com erros de solicitação aqui
+                jsonResponse = "Erro na solicitação HTTP: " + urlConnection.getResponseCode();
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (urlConnection != null){
+                urlConnection.disconnect();
+            }
+            if (inputStream != null){
+                inputStream.close();
+            }
+        }
+
+        System.out.println(jsonResponse);
+        return jsonResponse;
+    }
+
+    private String readFromStream(InputStream inputStream) throws IOException {
+        StringBuilder output = new StringBuilder();
+        if (inputStream != null) {
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream, Charset.forName("UTF-8"));
+            BufferedReader reader = new BufferedReader(inputStreamReader);
+            String line = reader.readLine();
+            while (line != null) {
+                output.append(line);
+                line = reader.readLine();
+            }
+        }
+        return output.toString();
+    }
+
+
+    private class HttpRequestTask extends AsyncTask<URL, Void, String> {
+        @Override
+        protected String doInBackground(URL... urls) {
+            // Este método será executado em segundo plano
+            // Aqui, você deve realizar a sua solicitação HTTP
+            // e retornar a resposta como uma String
+            try {
+                URL url = urls[0];
+                return makeHttpRequest(url);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            // Este método será executado na thread principal
+            // Aqui, você pode manipular o resultado da solicitação
+            if (result != null) {
+                // Exibir o conteúdo da jsonResponse em um Toast
+                Toast.makeText(ResultActivity.this, result, Toast.LENGTH_LONG).show();
+            } else {
+                // Lidar com o erro ou falta de resposta, se necessário
+                Toast.makeText(ResultActivity.this, "Erro na solicitação HTTP", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
 
 
 }
