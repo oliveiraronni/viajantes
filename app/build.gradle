@@ -46,3 +46,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth'
 
 }
+
+dependencies {
+    implementation 'com.google.code.gson:gson:2.8.8' // Use a versão mais recente do Gson
+}

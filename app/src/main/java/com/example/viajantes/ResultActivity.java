@@ -33,6 +33,8 @@ import com.example.viajantes.databinding.ActivityResultBinding;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 public class ResultActivity extends AppCompatActivity {
 
@@ -128,7 +130,7 @@ public class ResultActivity extends AppCompatActivity {
         }
     }
 
-    public String makeHttpRequest (URL url) throws IOException{
+    public String makeHttpRequest (URL url) throws IOException, JSONException {
         String jsonResponse = "";
         HttpURLConnection urlConnection = null;
         InputStream inputStream = null;
@@ -161,6 +163,64 @@ public class ResultActivity extends AppCompatActivity {
         }
 
         System.out.println(jsonResponse);
+
+        String jsonString = jsonResponse;
+        JsonObject jsonObject = JsonParser.parseString(jsonString).getAsJsonObject();
+
+        // Acessar o valor de "start_address"
+        String startAddress = jsonObject
+                .getAsJsonArray("routes")
+                .get(0)  // Assume que há pelo menos um elemento em "routes"
+                .getAsJsonObject()
+                .getAsJsonArray("legs")
+                .get(0)  // Assume que há pelo menos um elemento em "legs"
+                .getAsJsonObject()
+                .get("start_address")
+                .getAsString();
+        System.out.println("start_address: " + startAddress);
+
+
+        // Acessar o valor "end_address"
+        String endAddress = jsonObject
+                .getAsJsonArray("routes")
+                .get(0)  // Assume que há pelo menos um elemento em "routes"
+                .getAsJsonObject()
+                .getAsJsonArray("legs")
+                .get(0)  // Assume que há pelo menos um elemento em "legs"
+                .getAsJsonObject()
+                .get("end_address")
+                .getAsString();
+        System.out.println("End Address: " + endAddress);
+
+        // Acessar o valor "distance"
+        JsonObject distanceObject = jsonObject
+                .getAsJsonArray("routes")
+                .get(0)  // Assume que há pelo menos um elemento em "routes"
+                .getAsJsonObject()
+                .getAsJsonArray("legs")
+                .get(0)  // Assume que há pelo menos um elemento em "legs"
+                .getAsJsonObject()
+                .getAsJsonObject("distance");
+        String distanceText = distanceObject.get("text").getAsString();
+        int distanceValue = distanceObject.get("value").getAsInt();
+        System.out.println("Distance text: " + distanceText);
+        System.out.println("Distance value: " + distanceValue);
+
+
+        // Acessar o valor "duration"
+        JsonObject durationObject = jsonObject
+                .getAsJsonArray("routes")
+                .get(0)  // Assume que há pelo menos um elemento em "routes"
+                .getAsJsonObject()
+                .getAsJsonArray("legs")
+                .get(0)  // Assume que há pelo menos um elemento em "legs"
+                .getAsJsonObject()
+                .getAsJsonObject("duration");
+        String durationText = durationObject.get("text").getAsString();
+        int durationValue = durationObject.get("value").getAsInt();
+        System.out.println("Duration text: " + durationText);
+        System.out.println("Duration value: " + durationValue);
+
         return jsonResponse;
     }
 
@@ -188,7 +248,7 @@ public class ResultActivity extends AppCompatActivity {
             try {
                 URL url = urls[0];
                 return makeHttpRequest(url);
-            } catch (IOException e) {
+            } catch (IOException | JSONException e) {
                 e.printStackTrace();
             }
             return null;
